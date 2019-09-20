@@ -30,9 +30,10 @@ public class DocumentFreqTracker {
 	/**
 	 * If the document does not exist in map yet it's added, if term does not exist yet in 
 	 * document term hash map it's added, and the term frequency is incremented
-	 * @param str documentID
+	 * @param docID documentID doc id
+	 * @param term term to be added to documents term map
 	 */
-	protected static void addString(String docID, String term) {
+	protected void addDocTerm(String docID, String term) {
 		HashMap<String, Integer> docMap = docFreq.get(docID);
 		if(docMap == null) {
 			HashMap<String, Integer> tmp = new HashMap<String, Integer>();
@@ -42,18 +43,26 @@ public class DocumentFreqTracker {
 		
 		Integer count = docMap.get(term);
 		if(count == null) {
-			docMap.put(term, 0);
-			count = docMap.get(term);
+			count = 0;
 		}
-		count += 1;
+		docMap.put(term, count + 1);
 		
 	}
 	
 	/**
-	 * Returns the constructed document term frequency map
+	 * This method is used to get the term frequencies of a given document
+	 * @param docID
 	 * @return
 	 */
-	protected static HashMap<String, HashMap<String, Integer>> getDocFreqs(){
+	public HashMap<String, Integer> getDoc(String docID) {
+		return docFreq.get(docID);
+	}
+	
+	/**
+	 * Returns the constructed document term frequency map
+	 * @return docFreq
+	 */
+	protected HashMap<String, HashMap<String, Integer>> getDocFreqs(){
 		return docFreq;
 	}
 }

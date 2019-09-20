@@ -96,7 +96,7 @@ public class SearchFiles {
     	//runs the searches with the default rankings
     	for(Page page: pagesForDefaultRanks) {
     		runSearchWithDefaultRank(page, indexPath, defaultRankWriter);
-    		runSearch(page, indexPath, customRankWriter, CustomSimilarity.getSimilarity(), CustomSimilarity.getSimilarityName());
+    		runSearch(page, indexPath, customRankWriter, CustomSimilarity.lncltn(), CustomSimilarity.getSimilarityName());
     	}
     	//close writers
     	defaultRankWriter.close();

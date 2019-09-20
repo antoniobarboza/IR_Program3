@@ -15,10 +15,13 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -70,7 +73,7 @@ public class Indexer {
     	IndexWriter indexWriter = new IndexWriter(dir, indexWriterConfig);
     	//clears index to avoid errors
     	indexWriter.deleteAll();
-    	indexDoc(indexWriter, input);
+    	indexDoc(indexWriter, input, analyzer);
     	indexWriter.close();
     } catch(Exception e) {
     	e.printStackTrace();
@@ -80,16 +83,20 @@ public class Indexer {
 
   /**
    * Creates Lucene Documents from an input file with paragraphs, then indexes them
-   * *This currently only supports using 1 file*
+   * Adds all documents and terms to a document frequency tracker
    * 
    * @param writer Writes to the given index
    * @param file file to be parsed into Lucene Documents
+   * @param analyzer to b e used to tokenize strings to add to document frequency map
    * 
    * @throws IOException If there is a low-level I/O error
    */
-  static void indexDoc(final IndexWriter writer, File file) throws Exception {
+  static void indexDoc(final IndexWriter writer, File file, Analyzer analyzer) throws Exception {
 	  //System.out.println("PATH: " + file.getAbsolutePath());
 	  FileInputStream fileStream = new FileInputStream(file);
+	  
+	  //Used to add all documents and all terms in the document to a map that is used to track each terms frequency in each document
+	  DocumentFreqTracker docFreq = DocumentFreqTracker.getInstance();
 	  //convert all data into paragraphs
 	  Iterable<Paragraph> paragraphs = null;
 	  try {
@@ -105,13 +112,30 @@ public class Indexer {
               writer.commit();
               commit = 0;
           }
-		  //System.out.println("PARAGRAPH : " + paragraph.getTextOnly());
+		  //Tokenize paragraphs text and add it to the document frequency tracker
+          //*This was the most easily readable way to process a lucen token stream
+          TokenStream tokens = analyzer.tokenStream("terms", paragraph.getTextOnly());
+          CharTermAttribute term = tokens.addAttribute(CharTermAttribute.class);
+          //Need to reset because it doesn't work if you don't
+          tokens.reset();
+          String docID = paragraph.getParaId();
+          while (tokens.incrementToken()) {
+            docFreq.addDocTerm(docID, term.toString());
+          }
+          //Debugging prints
+          //HashMap<String, Integer> tmp = docFreq.getDoc(docID);
+          //if(tmp != null) System.out.println(docID + ": " + tmp.toString());
+          //end debugging prints
+          tokens.end();
+          tokens.close();
+          
 		  Document doc = new Document();
 		  doc.add(new StringField("id", paragraph.getParaId(), Field.Store.YES));   //Correct this needs to be a stringfield
 		  doc.add(new TextField("text", paragraph.getTextOnly(), Field.Store.YES)); //Correct this needs to be Textfield
 		  writer.addDocument(doc);
 		  commit++;
 	  }
+	  //System.out.println(docFreq.getDocFreqs().toString());
 	  writer.commit();
 	  System.out.println("All documents indexed!");
   }
