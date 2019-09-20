@@ -9,10 +9,11 @@ import java.util.HashMap;
  */
 public class DocumentFreqTracker {
 	private static DocumentFreqTracker instance = null;
-	private static HashMap<String, Integer> docFreq;
+	//					  DocumentID	   Term     count
+	private static HashMap<String, HashMap<String, Integer>> docFreq;
 	
 	private DocumentFreqTracker() {
-		docFreq = new HashMap<String, Integer>();
+		docFreq = new HashMap<String, HashMap<String, Integer>>();
 	}
 
 	/**
@@ -27,17 +28,32 @@ public class DocumentFreqTracker {
 	}
 	
 	/**
-	 * If the key doesn't exist it adds a new one, if it does adds 1 to count
-	 * @param str key to be checked/added
+	 * If the document does not exist in map yet it's added, if term does not exist yet in 
+	 * document term hash map it's added, and the term frequency is incremented
+	 * @param str documentID
 	 */
-	protected static void addString(String str) {
-		Integer count = docFreq.get(str);
+	protected static void addString(String docID, String term) {
+		HashMap<String, Integer> docMap = docFreq.get(docID);
+		if(docMap == null) {
+			HashMap<String, Integer> tmp = new HashMap<String, Integer>();
+			docFreq.put(docID, tmp);
+			docMap = docFreq.get(docID);
+		}
+		
+		Integer count = docMap.get(term);
 		if(count == null) {
-			docFreq.put(str,  1);
-		} else count += 1;
+			docMap.put(term, 0);
+			count = docMap.get(term);
+		}
+		count += 1;
+		
 	}
 	
-	protected static HashMap<String, Integer> getDocFreqs(){
+	/**
+	 * Returns the constructed document term frequency map
+	 * @return
+	 */
+	protected static HashMap<String, HashMap<String, Integer>> getDocFreqs(){
 		return docFreq;
 	}
 }
