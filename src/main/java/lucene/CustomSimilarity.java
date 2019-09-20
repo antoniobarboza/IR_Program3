@@ -78,7 +78,7 @@ public class CustomSimilarity {
 	
 	/**
 	 * Returns the name of the ranking function
-	 * null if a similarit has not been selected yet
+	 * null if a similarity has not been selected yet
 	 */
 	public static String getSimilarityName() {
 		return tfidfModel;
