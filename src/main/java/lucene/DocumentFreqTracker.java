@@ -1,6 +1,7 @@
 package lucene;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * This class is a singleton that is used to keep track of document frequency
@@ -12,8 +13,15 @@ public class DocumentFreqTracker {
 	//					  DocumentID	   Term     count
 	private static HashMap<String, HashMap<String, Integer>> docFreq;
 	
+	//                    DocumentID       Term     Weight
+	private static HashMap<String, HashMap<String, Float>> documentVectors;
+	
+	//This is what determines what weight will be calculated and stored in the documentVectors, MUST BE lnc, bnn or anc
+	private static String schema;
+	
 	private DocumentFreqTracker() {
 		docFreq = new HashMap<String, HashMap<String, Integer>>();
+		documentVectors = new HashMap<String, HashMap<String, Float>>();
 	}
 
 	/**
@@ -26,6 +34,7 @@ public class DocumentFreqTracker {
 		}
 		return instance;
 	}
+	
 	
 	/**
 	 * If the document does not exist in map yet it's added, if term does not exist yet in 
@@ -48,6 +57,76 @@ public class DocumentFreqTracker {
 		docMap.put(term, count + 1);
 		
 	}
+	
+	/**
+	 * Must be lnc, bnn or anc. This determines how the weight will be calculated
+	 */
+	public static void setDocumentWeightingSchema(String newSchema) throws IllegalArgumentException{
+		newSchema = newSchema.toLowerCase();
+		if( !schema.equals("lnc") && !schema.equals("bnn") && !schema.equals("anc")) {
+			schema = newSchema;
+		}
+		else throw new IllegalArgumentException();
+	}
+	
+	/**
+	 * This method MUST be called after all of the documents have been indexed and processed.
+	 * This method goes through the document frequencies and calculates their document vectors for the given schema
+	 */
+	private static void calculateDocumentVectors() {
+		Set<String> keys = docFreq.keySet();
+		for(String docID: keys) {
+			HashMap<String, Integer> tmp = docFreq.get(docID);
+			HashMap<String, Float> documentVec;
+			switch(schema) {
+			case "lnc":
+				documentVec = calculateLnc(tmp);
+				break;
+			case "bnn":
+				documentVec = calculateBnn(tmp);
+				break;
+				//default is anc
+			default:
+				documentVec = calculateAnc(tmp);
+				break;
+			}
+			documentVectors.put(docID,  documentVec);
+		}
+	}
+	
+	/**
+	 * This method calculates the lnc of a given hashmap of terms and frequencies
+	 * 
+	 * @param termFreqs the hashmap of terms and their frequencies of a given document
+	 * @return the calculated hashmap using the lnc weighting schema
+	 */
+	private static HashMap<String, Float> calculateLnc(HashMap<String, Integer> termFreqs){
+		return null;
+	}
+	
+	/**
+	 * This method calculates the bnn of a given hashmap of terms and frequencies
+	 * 
+	 * @param termFreqs the hashmap of terms and their frequencies of a given document
+	 * @return the calculated hashmap using the bnn weighting schema
+	 */
+	private static HashMap<String, Float> calculateBnn(HashMap<String, Integer> termFreqs){
+		return null;
+	}
+	
+	/**
+	 * This method calculates the anc of a given hashmap of terms and frequencies
+	 * 
+	 * @param termFreqs the hashmap of terms and their frequencies of a given document
+	 * @return the calculated hashmap using the anc weighting schema
+	 */
+	private static HashMap<String, Float> calculateAnc(HashMap<String, Integer> termFreqs){
+		return null;
+	}
+	
+	
+	
+	
 	
 	/**
 	 * This method is used to get the term frequencies of a given document
