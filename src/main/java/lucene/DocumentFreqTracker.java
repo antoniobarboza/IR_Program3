@@ -59,6 +59,13 @@ public class DocumentFreqTracker {
 	}
 	
 	/**
+	 * This method is used when the indexer is run so the new set of documents can be saved here
+	 */
+	public void resetDocMap() {
+		instance = new DocumentFreqTracker();
+	}
+	
+	/**
 	 * Returns the constructed document term frequency map
 	 * @return docFreq
 	 */

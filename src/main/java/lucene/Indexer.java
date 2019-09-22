@@ -97,6 +97,7 @@ public class Indexer {
 	  
 	  //Used to add all documents and all terms in the document to a map that is used to track each terms frequency in each document
 	  DocumentFreqTracker docFreq = DocumentFreqTracker.getInstance();
+	  docFreq.resetDocMap();
 	  //convert all data into paragraphs
 	  Iterable<Paragraph> paragraphs = null;
 	  try {
