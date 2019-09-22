@@ -11,7 +11,7 @@ import java.util.Set;
 public class DocumentFreqTracker {
 	private static DocumentFreqTracker instance = null;
 	//					  DocumentID	   Term     count
-	private static HashMap<String, HashMap<String, Integer>> docFreq;
+	private static HashMap<String, HashMap<String, Integer>> termFreq;
 	
 	//                    DocumentID       Term     Weight
 	private static HashMap<String, HashMap<String, Float>> documentVectors;
@@ -20,7 +20,7 @@ public class DocumentFreqTracker {
 	private static String schema;
 	
 	private DocumentFreqTracker() {
-		docFreq = new HashMap<String, HashMap<String, Integer>>();
+		termFreq = new HashMap<String, HashMap<String, Integer>>();
 		documentVectors = new HashMap<String, HashMap<String, Float>>();
 	}
 
@@ -43,11 +43,11 @@ public class DocumentFreqTracker {
 	 * @param term term to be added to documents term map
 	 */
 	protected void addDocTerm(String docID, String term) {
-		HashMap<String, Integer> docMap = docFreq.get(docID);
+		HashMap<String, Integer> docMap = termFreq.get(docID);
 		if(docMap == null) {
 			HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-			docFreq.put(docID, tmp);
-			docMap = docFreq.get(docID);
+			termFreq.put(docID, tmp);
+			docMap = termFreq.get(docID);
 		}
 		
 		Integer count = docMap.get(term);
@@ -74,9 +74,9 @@ public class DocumentFreqTracker {
 	 * This method goes through the document frequencies and calculates their document vectors for the given schema
 	 */
 	private static void calculateDocumentVectors() {
-		Set<String> keys = docFreq.keySet();
+		Set<String> keys = termFreq.keySet();
 		for(String docID: keys) {
-			HashMap<String, Integer> tmp = docFreq.get(docID);
+			HashMap<String, Integer> tmp = termFreq.get(docID);
 			HashMap<String, Float> documentVec;
 			switch(schema) {
 			case "lnc":
@@ -134,7 +134,7 @@ public class DocumentFreqTracker {
 	 * @return
 	 */
 	public HashMap<String, Integer> getDoc(String docID) {
-		return docFreq.get(docID);
+		return termFreq.get(docID);
 	}
 	
 	/**
@@ -146,9 +146,9 @@ public class DocumentFreqTracker {
 	
 	/**
 	 * Returns the constructed document term frequency map
-	 * @return docFreq
+	 * @return termFreq
 	 */
-	protected HashMap<String, HashMap<String, Integer>> getDocFreqs(){
-		return docFreq;
+	protected HashMap<String, HashMap<String, Integer>> gettermFreqs(){
+		return termFreq;
 	}
 }
