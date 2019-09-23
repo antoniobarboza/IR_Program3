@@ -11,6 +11,7 @@ import java.util.Set;
  */
 public class DocumentFreqTracker {
 	private static DocumentFreqTracker instance = null;
+	private static int maxTermFreq = 0;
 	//					  DocumentID	   Term     count
 	private static HashMap<String, HashMap<String, Integer>> termFreq;
 	
@@ -56,6 +57,7 @@ public class DocumentFreqTracker {
 			count = 0;
 		}
 		docMap.put(term, count + 1);
+		if(count + 1 > maxTermFreq) maxTermFreq = count + 1;
 		
 	}
 	
@@ -134,8 +136,15 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the bnn weighting schema
 	 */
-	private static HashMap<String, Float> calculateBnn(HashMap<String, Integer> termFreqs){
-		return null;
+	private static HashMap<String, Float> calculateBnn(HashMap<String, Integer> termdocFreq){
+		//If the term frequency is greater than 1 it's tf idf value is 1
+		HashMap<String, Float> docVec = new HashMap<String, Float>();
+		for ( String term : termdocFreq.keySet() ) {
+			float l = 0;
+			if(termdocFreq.get(term) > 0) l = 1;
+			docVec.put(term, l);
+		}
+		return docVec;
 	}
 	
 	/**
