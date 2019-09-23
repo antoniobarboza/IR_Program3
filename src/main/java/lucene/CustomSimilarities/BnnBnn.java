@@ -7,13 +7,15 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.util.SmallFloat;
 
 public class BnnBnn extends Similarity{
 
 	@Override
 	public long computeNorm(FieldInvertState state) {
-		// TODO Auto-generated method stub
-		return 0;
+		// No normalization applied.
+		int numTerms = state.getLength();
+		return SmallFloat.intToByte4(numTerms);
 	}
 
 	@Override

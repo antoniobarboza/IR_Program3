@@ -1,6 +1,7 @@
 package lucene;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -100,8 +101,27 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the lnc weighting schema
 	 */
-	private static HashMap<String, Float> calculateLnc(HashMap<String, Integer> termFreqs){
-		return null;
+	private static HashMap<String, Float> calculateLnc(HashMap<String, Integer> termdocFreq){
+		//calculateDocumentVectors();
+		//Now we have built a hashmap termdocfreq: Term-> termfrequency
+		HashMap<String, Float> simHash = new HashMap<String, Float>();
+		for ( String term : termdocFreq.keySet() ) {
+			float l = (float) ( 1 + Math.log(termdocFreq.get(term)));
+			simHash.put(term, l);
+		}
+		//now I have to get the normalized vector length
+		float sumOfSquares = 0; 
+		for ( String term : simHash.keySet() ) {
+			sumOfSquares += Math.pow( simHash.get(term), 2);
+		}
+		float vectorLength = (float) ( 1 / (Math.sqrt( sumOfSquares )));
+		//now need to divide each value by vector length to normalize
+		for ( String term : simHash.keySet() ) {
+			float temp = simHash.get(term);
+			temp = temp / vectorLength;
+		}
+		return simHash;
+		
 	}
 	
 	/**
