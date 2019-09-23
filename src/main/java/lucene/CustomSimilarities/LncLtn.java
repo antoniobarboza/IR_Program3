@@ -33,8 +33,10 @@ public class LncLtn extends Similarity{
 
 	@Override
 	public SimWeight computeWeight(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+
 		// TF_IDF value for the query 
 		return new DefaultSimWeight();
+
 	}
 
 	@Override
