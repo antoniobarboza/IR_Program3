@@ -134,8 +134,15 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the bnn weighting schema
 	 */
-	private static HashMap<String, Float> calculateBnn(HashMap<String, Integer> termFreqs){
-		return null;
+	private static HashMap<String, Float> calculateBnn(HashMap<String, Integer> termdocFreq){
+		//If the term frequency is greater than 1 it's tf idf value is 1
+		HashMap<String, Float> docVec = new HashMap<String, Float>();
+		for ( String term : termdocFreq.keySet() ) {
+			float l = 0;
+			if(termdocFreq.get(term) > 0) l = 1;
+			docVec.put(term, l);
+		}
+		return docVec;
 	}
 	
 	/**
