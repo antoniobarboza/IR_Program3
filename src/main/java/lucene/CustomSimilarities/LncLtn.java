@@ -11,7 +11,8 @@ import org.apache.lucene.search.similarities.Similarity;
 
 public class LncLtn extends Similarity{
 	
-	//Constructor that takes in Hashmap 
+	//Constructor that takes in Query  
+	//takes in Hashmap of document 
 	public LncLtn () {
 		
 	}
