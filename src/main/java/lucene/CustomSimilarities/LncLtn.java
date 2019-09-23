@@ -109,9 +109,10 @@ public class LncLtn extends Similarity{
 		 */
 		@Override
 		public float score(int doc, float freq) throws IOException {
+			if(doc < 0 || doc >= 5080) return 0;
 			String docID = searcher.doc(doc).get("id");
 			HashMap<String, Float> docVector = freqTracker.getDocumentVectors().get(docID);
-	
+			//System.out.println("DOCID: " + doc);
 			if(docVector == null) {
 				//System.out.println("NO DOCUMENTS RETURNED FOR: " + docID);
 				return 0;
