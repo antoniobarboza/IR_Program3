@@ -58,6 +58,9 @@ public class SearchFiles {
    * @throws Exception if file opening fails or deserializeData fails
    */
   public static void main(String[] args) throws Exception {
+	  DocumentFreqTracker freqTracker = DocumentFreqTracker.getInstance();
+	  freqTracker.loadDataFromFile();
+	  freqTracker.getDocKeySet();
     //This is a directory to the index, args[0] or default
     String indexPath;
     if(args.length > 0) indexPath = args[0];
@@ -90,33 +93,35 @@ public class SearchFiles {
     	//Create the files to be written to
     	File defaultRankOutputFile = new File(defaultRankOutputPath);
     	defaultRankOutputFile.createNewFile();
-    	File ancapcRankOutputFile = new File(ancapcOutputPath);
-    	ancapcRankOutputFile.createNewFile();
-    	File bnnbnnRankOutputFile = new File(bnnbnnOutputPath);
-    	bnnbnnRankOutputFile.createNewFile();
+    	//File ancapcRankOutputFile = new File(ancapcOutputPath);
+    	//ancapcRankOutputFile.createNewFile();
+    	//File bnnbnnRankOutputFile = new File(bnnbnnOutputPath);
+    	//bnnbnnRankOutputFile.createNewFile();
     	File lncltnRankOutputFile = new File(lncltnOutputPath);
     	lncltnRankOutputFile.createNewFile();
     	//Create the file writers
     	
     	BufferedWriter defaultRankWriter = new BufferedWriter(new FileWriter(defaultRankOutputPath));
-    	BufferedWriter ancapcRankWriter = new BufferedWriter(new FileWriter(ancapcOutputPath));
-    	BufferedWriter bnnbnnRankWriter = new BufferedWriter(new FileWriter(bnnbnnOutputPath));
+    	//BufferedWriter ancapcRankWriter = new BufferedWriter(new FileWriter(ancapcOutputPath));
+    	//BufferedWriter bnnbnnRankWriter = new BufferedWriter(new FileWriter(bnnbnnOutputPath));
     	BufferedWriter lncltnRankWriter = new BufferedWriter(new FileWriter(lncltnOutputPath));
     	
     	//indicate that the output is being written to a file
     	System.out.println("Searching pages using different ranking functions...");
     	
+    	freqTracker.setDocumentWeightingSchema("lnc");
     	//runs the searches with the default rankings
     	for(Page page: pagesForDefaultRanks) {
     		runSearchWithDefaultRank(page, indexPath, defaultRankWriter);
-    		runSearch(page, indexPath, ancapcRankWriter, new AncApc(), "anc.apc");
-    		runSearch(page, indexPath, bnnbnnRankWriter, new BnnBnn(), "bnn.bnn");
-    		runSearch(page, indexPath, ancapcRankWriter, new LncLtn(), "lnc.ltn");
+    		//runSearch(page, indexPath, ancapcRankWriter, new AncApc(), "anc.apc");
+    		//runSearch(page, indexPath, bnnbnnRankWriter, new BnnBnn(), "bnn.bnn");
+    		
+    		runSearch(page, indexPath, lncltnRankWriter, new LncLtn(), "lnc.ltn");
     	}
     	//close writers
     	defaultRankWriter.close();
-    	ancapcRankWriter.close();
-    	bnnbnnRankWriter.close();
+    	//ancapcRankWriter.close();
+    	//bnnbnnRankWriter.close();
     	lncltnRankWriter.close();
     	
     	//All ranked searches are done
@@ -154,13 +159,19 @@ public class SearchFiles {
 	    Directory dir = FSDirectory.open(Paths.get(indexPath));
 	    IndexReader reader = DirectoryReader.open(dir);
 	    IndexSearcher searcher = new IndexSearcher(reader);
-	    searcher.setSimilarity(similarity);
 	    
 	    //This sets up the query
 	    Analyzer analyzer = new StandardAnalyzer();
 	    QueryParser queryParser = new QueryParser("text", analyzer);
 	    //Query query = queryParser.parse(QueryParser.escape(queryString));
 	    Query query = queryParser.parse(queryString);
+	    
+	    //set the searcher to allow for checking documents by id
+	    if(similarity instanceof LncLtn ) {
+	    	((LncLtn) similarity).setSearcherAndQuery(searcher, query);
+	    }
+	    //Set the similarity after constructing query to allow custom similarity to use query
+	    searcher.setSimilarity(similarity);
 	    
 	    //This initiates the search and returns top 100
 	    TopDocs searchResult = searcher.search(query,100);
