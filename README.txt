@@ -24,4 +24,11 @@ java -Xmx50g -cp target/IR_Program3-0.1-jar-with-dependencies.jar lucene.Spearma
 -Arg 0 - path to the comparison ranking. 
 
 *This was tested with the comparison between lucene default and the custom similarity used last week! 
+TO TEST: 
+
+java -Xmx50g -cp target/IR_Program3-0.1-jar-with-dependencies.jar lucene.SearchFilesOld
+*This produces the old CustomRanking from last week 
+
+*This compars the default with the Custom Ranking produced above. 
+java -Xmx50g -cp target/IR_Program3-0.1-jar-with-dependencies.jar lucene.SpearmanRank src/main/java/output/CustomRankingOutput.txt
 
