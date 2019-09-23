@@ -153,8 +153,25 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the anc weighting schema
 	 */
-	private static HashMap<String, Float> calculateAnc(HashMap<String, Integer> termFreqs){
-		return null;
+	private static HashMap<String, Float> calculateAnc(HashMap<String, Integer> termdocFreq){
+		//Now we have built a hashmap termdocfreq: Term-> termfrequency
+		HashMap<String, Float> simHash = new HashMap<String, Float>();
+		for ( String term : termdocFreq.keySet() ) {
+			float a = (float) ( 0.5 + (0.5*termdocFreq.get(term)/maxTermFreq) );
+			simHash.put(term, a);
+		}
+		//now I have to get the normalized vector length
+		float sumOfSquares = 0; 
+		for ( String term : simHash.keySet() ) {
+			sumOfSquares += Math.pow( simHash.get(term), 2);
+		}
+		float vectorLength = (float) ( 1 / (Math.sqrt( sumOfSquares )));
+		//now need to divide each value by vector length to normalize
+		for ( String term : simHash.keySet() ) {
+			float temp = simHash.get(term);
+			temp = temp / vectorLength;
+		}
+		return simHash;
 	}
 	
 	
