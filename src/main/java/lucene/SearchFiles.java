@@ -42,6 +42,9 @@ import org.apache.lucene.store.FSDirectory;
 
 import edu.unh.cs.treccar_v2.Data.Page;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
+import lucene.CustomSimilarities.AncApc;
+import lucene.CustomSimilarities.BnnBnn;
+import lucene.CustomSimilarities.LncLtn;
 
 
 public class SearchFiles {
@@ -68,7 +71,9 @@ public class SearchFiles {
     //Paths to the 2 output files
     //Question: do I have to take these as an input
     String defaultRankOutputPath = "./src/main/java/output/DefaultRankingOutput.txt";
-    String customRankOutputPath = "./src/main/java/output/CustomRankingOutput.txt";
+    String ancapcOutputPath = "./src/main/java/output/AncApc.txt";
+    String bnnbnnOutputPath = "./src/main/java/output/BnnBnn.txt";
+    String lncltnOutputPath = "./src/main/java/output/LncLtn.txt";
     
     //Convert the input file into an iteratable of pages to query
     File pageQueries = new File(inputFilePath);
@@ -78,17 +83,25 @@ public class SearchFiles {
     try {
     	//Delete the output files if they exist already
     	Files.deleteIfExists(Paths.get(defaultRankOutputPath));
-    	Files.deleteIfExists(Paths.get(customRankOutputPath));
+    	Files.deleteIfExists(Paths.get(ancapcOutputPath));
+    	Files.deleteIfExists(Paths.get(bnnbnnOutputPath));
+    	Files.deleteIfExists(Paths.get(lncltnOutputPath));
     	
     	//Create the files to be written to
     	File defaultRankOutputFile = new File(defaultRankOutputPath);
     	defaultRankOutputFile.createNewFile();
-    	File customRankOutputFile = new File(customRankOutputPath);
-    	customRankOutputFile.createNewFile();
+    	File ancapcRankOutputFile = new File(ancapcOutputPath);
+    	ancapcRankOutputFile.createNewFile();
+    	File bnnbnnRankOutputFile = new File(bnnbnnOutputPath);
+    	bnnbnnRankOutputFile.createNewFile();
+    	File lncltnRankOutputFile = new File(lncltnOutputPath);
+    	lncltnRankOutputFile.createNewFile();
     	//Create the file writers
     	
     	BufferedWriter defaultRankWriter = new BufferedWriter(new FileWriter(defaultRankOutputPath));
-    	BufferedWriter customRankWriter = new BufferedWriter(new FileWriter(customRankOutputPath));
+    	BufferedWriter ancapcRankWriter = new BufferedWriter(new FileWriter(ancapcOutputPath));
+    	BufferedWriter bnnbnnRankWriter = new BufferedWriter(new FileWriter(bnnbnnOutputPath));
+    	BufferedWriter lncltnRankWriter = new BufferedWriter(new FileWriter(lncltnOutputPath));
     	
     	//indicate that the output is being written to a file
     	System.out.println("Searching pages using different ranking functions...");
@@ -96,13 +109,17 @@ public class SearchFiles {
     	//runs the searches with the default rankings
     	for(Page page: pagesForDefaultRanks) {
     		runSearchWithDefaultRank(page, indexPath, defaultRankWriter);
-    		runSearch(page, indexPath, customRankWriter, CustomSimilarity.lncltn(), CustomSimilarity.getSimilarityName());
+    		runSearch(page, indexPath, ancapcRankWriter, new AncApc(), "anc.apc");
+    		runSearch(page, indexPath, bnnbnnRankWriter, new BnnBnn(), "bnn.bnn");
+    		runSearch(page, indexPath, ancapcRankWriter, new LncLtn(), "lnc.ltn");
     	}
     	//close writers
     	defaultRankWriter.close();
-    	customRankWriter.close();
+    	ancapcRankWriter.close();
+    	bnnbnnRankWriter.close();
+    	lncltnRankWriter.close();
     	
-    	//All default ranked searches are done
+    	//All ranked searches are done
     	System.out.println("All ranking done! Output files are found in folder: src/main/java/output");
     	
     } catch(Exception e) {
@@ -160,7 +177,7 @@ public class SearchFiles {
 	    	Document document = searcher.doc(hits[j].doc);
 	    	float score = hits[j].score;
 	    	String paraId = document.get("id");
-	    	writer.write(queryId + " Q0 " + paraId + " " + j + " " + score + " Team9-" + similarityName + "\n");
+	    	writer.write(queryId + " Q0 " + paraId + " " + j + " " + score + " Team11-" + similarityName + "\n");
 	    }
 	   //writer.write("\n\n");
   }
