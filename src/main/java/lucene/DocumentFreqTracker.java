@@ -94,7 +94,13 @@ public class DocumentFreqTracker {
 			documentVectors.put(docID,  documentVec);
 		}
 	}
-	
+	/**
+	 * This returns the map of docId -> term -> TF-IDF
+	 * @return
+	 */
+	public static HashMap<String, HashMap<String, Float>> getDocumentVectors() {
+		return documentVectors;
+	}
 	/**
 	 * This method calculates the lnc of a given hashmap of terms and frequencies
 	 * 
@@ -102,7 +108,6 @@ public class DocumentFreqTracker {
 	 * @return the calculated hashmap using the lnc weighting schema
 	 */
 	private static HashMap<String, Float> calculateLnc(HashMap<String, Integer> termdocFreq){
-		//calculateDocumentVectors();
 		//Now we have built a hashmap termdocfreq: Term-> termfrequency
 		HashMap<String, Float> simHash = new HashMap<String, Float>();
 		for ( String term : termdocFreq.keySet() ) {
@@ -121,7 +126,6 @@ public class DocumentFreqTracker {
 			temp = temp / vectorLength;
 		}
 		return simHash;
-		
 	}
 	
 	/**
