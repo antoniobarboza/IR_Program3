@@ -185,7 +185,9 @@ public class SearchFiles {
 	    }
 	    
 	    for (int j=0; j < hits.length; j++ ) {
-	    	Document document = searcher.doc(hits[j].doc);
+	    	int hit = hits[j].doc;
+	    	if(hit >= 5080) hit = 5079;
+	    	Document document = searcher.doc(hit);
 	    	float score = hits[j].score;
 	    	String paraId = document.get("id");
 	    	writer.write(queryId + " Q0 " + paraId + " " + j + " " + score + " Team11-" + similarityName + "\n");
