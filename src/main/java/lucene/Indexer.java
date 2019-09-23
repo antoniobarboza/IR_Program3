@@ -44,14 +44,17 @@ import edu.unh.cs.treccar_v2.read_data.DeserializeData;
  * 
  */
 public class Indexer {
-  
+	
   private Indexer() {}
+  //Used to add all documents and all terms in the document to a map that is used to track each terms frequency in each document
+  private static DocumentFreqTracker docFreq = DocumentFreqTracker.getInstance();
 
   /** Index all text files under a directory.
    * 
    * @param args args[0] will be the path to the index directory, default value of: ./src/main/java/index
    */
   public static void main(String[] args) {
+	  
 	  //check if indexPath passed in, if not set to default value
     String indexPath;
     if(args.length != 0) indexPath = args[0];
@@ -92,12 +95,10 @@ public class Indexer {
    * @throws IOException If there is a low-level I/O error
    */
   static void indexDoc(final IndexWriter writer, File file, Analyzer analyzer) throws Exception {
+	  docFreq.resetDocMap();
 	  //System.out.println("PATH: " + file.getAbsolutePath());
 	  FileInputStream fileStream = new FileInputStream(file);
 	  
-	  //Used to add all documents and all terms in the document to a map that is used to track each terms frequency in each document
-	  DocumentFreqTracker docFreq = DocumentFreqTracker.getInstance();
-	  docFreq.resetDocMap();
 	  //convert all data into paragraphs
 	  Iterable<Paragraph> paragraphs = null;
 	  try {
@@ -138,6 +139,8 @@ public class Indexer {
 	  }
 	  //System.out.println(docFreq.getDocFreqs().toString());
 	  writer.commit();
+	  docFreq.writeDataToFile();
+	  //System.out.println(docFreq.getDocKeySet().toString());
 	  System.out.println("All documents indexed!");
   }
 

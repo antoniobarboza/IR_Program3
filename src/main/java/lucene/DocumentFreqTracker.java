@@ -1,5 +1,14 @@
 package lucene;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +19,10 @@ import java.util.Set;
  *
  */
 public class DocumentFreqTracker {
-	private static DocumentFreqTracker instance = null;
-	private static int maxTermFreq = 0;
+	private static String writeFilePath = "./src/main/java/lucene/FrequencyTrackerData.txt";
+	private static DocumentFreqTracker instance;// = null;
+	private static int maxTermFreq;
+	private static String newDocString = "START_OF_NEW_DOC_DATA";
 	//					  DocumentID	   Term     count
 	private static HashMap<String, HashMap<String, Integer>> termFreq;
 	
@@ -21,18 +32,25 @@ public class DocumentFreqTracker {
 	//This is what determines what weight will be calculated and stored in the documentVectors, MUST BE lnc, bnn or anc
 	private static String schema;
 	
-	private DocumentFreqTracker() {
+	private DocumentFreqTracker() throws IOException {
 		termFreq = new HashMap<String, HashMap<String, Integer>>();
 		documentVectors = new HashMap<String, HashMap<String, Float>>();
+		maxTermFreq = 0;
 	}
 
 	/**
 	 * Singleton get method to create new instance or get existing
 	 * @return
+	 * @throws IOException 
 	 */
-	public static DocumentFreqTracker getInstance() {
+	public static DocumentFreqTracker getInstance(){
 		if( instance == null) {
-			instance = new DocumentFreqTracker();
+			//System.out.println("New Instance created!");
+			try {
+				instance = new DocumentFreqTracker();
+			} catch(Exception e) {
+				
+			}
 		}
 		return instance;
 	}
@@ -44,7 +62,7 @@ public class DocumentFreqTracker {
 	 * @param docID documentID doc id
 	 * @param term term to be added to documents term map
 	 */
-	protected void addDocTerm(String docID, String term) {
+	public void addDocTerm(String docID, String term) {
 		HashMap<String, Integer> docMap = termFreq.get(docID);
 		if(docMap == null) {
 			HashMap<String, Integer> tmp = new HashMap<String, Integer>();
@@ -64,10 +82,11 @@ public class DocumentFreqTracker {
 	/**
 	 * Must be lnc, bnn or anc. This determines how the weight will be calculated
 	 */
-	public static void setDocumentWeightingSchema(String newSchema) throws IllegalArgumentException{
-		newSchema = newSchema.toLowerCase();
-		if( !schema.equals("lnc") && !schema.equals("bnn") && !schema.equals("anc")) {
+	public void setDocumentWeightingSchema(String newSchema) throws IllegalArgumentException{
+		schema = newSchema.toLowerCase();
+		if( schema.equals("lnc") || schema.equals("bnn") || schema.equals("anc")) {
 			schema = newSchema;
+			calculateDocumentVectors();
 		}
 		else throw new IllegalArgumentException();
 	}
@@ -76,8 +95,9 @@ public class DocumentFreqTracker {
 	 * This method MUST be called after all of the documents have been indexed and processed.
 	 * This method goes through the document frequencies and calculates their document vectors for the given schema
 	 */
-	private static void calculateDocumentVectors() {
+	private void calculateDocumentVectors() {
 		Set<String> keys = termFreq.keySet();
+		//.out.println("KEY SET SIZE: " + keys.size());
 		for(String docID: keys) {
 			HashMap<String, Integer> tmp = termFreq.get(docID);
 			HashMap<String, Float> documentVec;
@@ -94,13 +114,14 @@ public class DocumentFreqTracker {
 				break;
 			}
 			documentVectors.put(docID,  documentVec);
+			//System.out.println(docID + ": " + documentVec.toString());
 		}
 	}
 	/**
 	 * This returns the map of docId -> term -> TF-IDF
 	 * @return
 	 */
-	public static HashMap<String, HashMap<String, Float>> getDocumentVectors() {
+	public HashMap<String, HashMap<String, Float>> getDocumentVectors() {
 		return documentVectors;
 	}
 	/**
@@ -109,7 +130,7 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the lnc weighting schema
 	 */
-	private static HashMap<String, Float> calculateLnc(HashMap<String, Integer> termdocFreq){
+	private HashMap<String, Float> calculateLnc(HashMap<String, Integer> termdocFreq){
 		//Now we have built a hashmap termdocfreq: Term-> termfrequency
 		HashMap<String, Float> simHash = new HashMap<String, Float>();
 		for ( String term : termdocFreq.keySet() ) {
@@ -136,7 +157,7 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the bnn weighting schema
 	 */
-	private static HashMap<String, Float> calculateBnn(HashMap<String, Integer> termdocFreq){
+	private HashMap<String, Float> calculateBnn(HashMap<String, Integer> termdocFreq){
 		//If the term frequency is greater than 1 it's tf idf value is 1
 		HashMap<String, Float> docVec = new HashMap<String, Float>();
 		for ( String term : termdocFreq.keySet() ) {
@@ -153,7 +174,8 @@ public class DocumentFreqTracker {
 	 * @param termFreqs the hashmap of terms and their frequencies of a given document
 	 * @return the calculated hashmap using the anc weighting schema
 	 */
-	private static HashMap<String, Float> calculateAnc(HashMap<String, Integer> termdocFreq){
+	private HashMap<String, Float> calculateAnc(HashMap<String, Integer> termdocFreq){
+		//NEED TO CHANGE THIS TO BE MAX FREQUENCY FOR EACH DOC
 		//Now we have built a hashmap termdocfreq: Term-> termfrequency
 		HashMap<String, Float> simHash = new HashMap<String, Float>();
 		for ( String term : termdocFreq.keySet() ) {
@@ -174,10 +196,6 @@ public class DocumentFreqTracker {
 		return simHash;
 	}
 	
-	
-	
-	
-	
 	/**
 	 * This method is used to get the term frequencies of a given document
 	 * @param docID
@@ -188,17 +206,83 @@ public class DocumentFreqTracker {
 	}
 	
 	/**
+	 * Returns the docID keyset so the set can be traversed
+	 * @return docID keyset
+	 */
+	public Set<String> getDocKeySet(){
+		return termFreq.keySet();
+	}
+	
+	/**
 	 * This method is used when the indexer is run so the new set of documents can be saved here
+	 * @throws IOException 
 	 */
 	public void resetDocMap() {
-		instance = new DocumentFreqTracker();
+		try {
+			Files.deleteIfExists(Paths.get(writeFilePath));
+			instance = new DocumentFreqTracker();
+		} catch(Exception e) {
+			
+		}
 	}
 	
 	/**
 	 * Returns the constructed document term frequency map
 	 * @return termFreq
 	 */
-	protected HashMap<String, HashMap<String, Integer>> gettermFreqs(){
+	public HashMap<String, HashMap<String, Integer>> gettermFreqs(){
 		return termFreq;
+	}
+	
+	/**
+	 * Must be called after indexer
+	 * @throws IOException
+	 */
+	public void writeDataToFile() throws IOException {
+		Files.deleteIfExists(Paths.get(writeFilePath));
+		File lncltnRankOutputFile = new File(writeFilePath);
+    	lncltnRankOutputFile.createNewFile();
+       	BufferedWriter writer = new BufferedWriter(new FileWriter(writeFilePath));
+       	
+       	for(String docID: termFreq.keySet()) {
+       		//used to determine a new Doument ID with it's data, means next line is document id
+       		writer.write(newDocString + "\n");
+       		writer.write(docID + "\n");
+       		//following is all of the entries for this documentID
+       		HashMap<String, Integer> freqs = termFreq.get(docID);
+       		//Writes each term and it's count on a line seperated by a space
+       		for(String term: freqs.keySet()) {
+       			writer.write(term + " " + freqs.get(term) + "\n");
+       		}
+       	}
+       	writer.close();
+	}
+	
+	/**
+	 * This method is used to parse the hashmap stored in the file written to by the method above
+	 * Must be called at the beginning of searcher
+	 * @throws IOException 
+	 */
+	public void loadDataFromFile() throws IOException {
+		File file = new File(writeFilePath);
+		if(!file.exists()) return;
+		BufferedReader reader = new BufferedReader(new FileReader(writeFilePath));
+    	String line = reader.readLine();
+    	while( line != null ) {
+    		if(line.equals(newDocString)) {
+    			line = reader.readLine();
+    			String docID = line;
+    			line = reader.readLine();
+    			while(line != null && line != newDocString && line.trim().split(" ").length > 1) {
+    				String [] termAndFreq = line.trim().split(" ");
+    				int freq = Integer.parseInt(termAndFreq[1]);;
+    				for(int i = 0; i < freq; i++) {
+    					addDocTerm(docID, termAndFreq[0]);
+    				}
+    				line = reader.readLine();
+    			}
+    		}
+    	}
+    	reader.close();
 	}
 }
