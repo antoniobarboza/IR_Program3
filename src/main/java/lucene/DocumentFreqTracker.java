@@ -11,6 +11,7 @@ import java.util.Set;
  */
 public class DocumentFreqTracker {
 	private static DocumentFreqTracker instance = null;
+	private static int maxTermFreq = 0;
 	//					  DocumentID	   Term     count
 	private static HashMap<String, HashMap<String, Integer>> termFreq;
 	
@@ -56,6 +57,7 @@ public class DocumentFreqTracker {
 			count = 0;
 		}
 		docMap.put(term, count + 1);
+		if(count + 1 > maxTermFreq) maxTermFreq = count + 1;
 		
 	}
 	
